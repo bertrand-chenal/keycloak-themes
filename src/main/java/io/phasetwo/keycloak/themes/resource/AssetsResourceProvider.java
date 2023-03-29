@@ -31,7 +31,14 @@ public class AssetsResourceProvider implements RealmResourceProvider {
   public static final String ASSETS_LOGIN_SECONDARY_COLOR = ASSETS_LOGIN_PREFIX + ".secondaryColor";
   public static final String ASSETS_LOGIN_BACKGROUND_COLOR =
       ASSETS_LOGIN_PREFIX + ".backgroundColor";
-  public static final String ASSETS_LOGIN_CSS = "_providerConfig.assets.login.css";
+  public static final String ASSETS_LOGIN_CSS = ASSERTS_LOGIN_PREFIX + ".css";
+
+  public static final String ASSETS_PORTAL_PREFIX = "_providerConfig.assets.portal";
+  public static final String ASSETS_PORTAL_PRIMARY_COLOR = ASSETS_PORTAL_PREFIX + ".primaryColor";
+  public static final String ASSETS_PORTAL_SECONDARY_COLOR = ASSETS_PORTAL_PREFIX + ".secondaryColor";
+  public static final String ASSETS_PORTAL_BACKGROUND_COLOR =
+      ASSETS_PORTAL_PREFIX + ".backgroundColor";
+  public static final String ASSETS_PORTAL_CSS = ASSERTS_PORTAL_PREFIX + ".css";
 
   @Override
   public Object getResource() {
@@ -40,6 +47,7 @@ public class AssetsResourceProvider implements RealmResourceProvider {
 
   public static final String ASSETS_LOGO_URL = "_providerConfig.assets.logo.url";
   public static final String ASSETS_FAVICON_URL = "_providerConfig.assets.favicon.url";
+  public static final String ASSETS_APPICON_URL = "_providerConfig.assets.appicon.url";
   public static final String DEFAULT_LOGO_PATH = "img/empty.png";
   public static final String DEFAULT_FAVICON_PATH = "img/default-favicon.ico";
 
@@ -54,6 +62,13 @@ public class AssetsResourceProvider implements RealmResourceProvider {
   public Response favicon(@Context HttpHeaders headers, @Context UriInfo uriInfo)
       throws IOException {
     return resourceRedirect(uriInfo, ASSETS_FAVICON_URL, DEFAULT_FAVICON_PATH);
+  }
+
+  @GET
+  @Path("img/appicon")
+  public Response appicon(@Context HttpHeaders headers, @Context UriInfo uriInfo)
+      throws IOException {
+    return resourceRedirect(uriInfo, ASSETS_APPICON_URL, DEFAULT_LOGO_PATH);
   }
 
   private Response resourceRedirect(UriInfo uriInfo, String key, String defaultPath) {
@@ -103,6 +118,28 @@ public class AssetsResourceProvider implements RealmResourceProvider {
       o.append(":root {\n");
       setColors(o);
       o.append("}\n");
+      css = o.toString();
+    }
+    InputStream resource = CharSource.wrap(css).asByteSource(StandardCharsets.UTF_8).openStream();
+    String mimeType = "text/css";
+    return null == resource
+        ? Response.status(Response.Status.NOT_FOUND).build()
+        : Response.ok(resource, mimeType).build();
+  }
+
+  @GET
+  @Path("css/portal.css")
+  @Produces("text/css")
+  public Response cssPortal(@Context HttpHeaders headers, @Context UriInfo uriInfo)
+      throws IOException {
+    String css = session.getContext().getRealm().getAttribute(ASSETS_PORTAL_CSS);
+    if (Strings.isNullOrEmpty(css)) {
+      StringBuilder o = new StringBuilder("/* portal css */\n");
+      /* todo from portal colors
+      o.append(":root {\n");
+      setColors(o);
+      o.append("}\n");
+      */
       css = o.toString();
     }
     InputStream resource = CharSource.wrap(css).asByteSource(StandardCharsets.UTF_8).openStream();
